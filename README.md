@@ -1,7 +1,33 @@
 # CarND-Controls-MPC
 Self-Driving Car Engineer Nanodegree Program
-
 ---
+
+## Introduction
+Model Predictive Controller. The project's aim was to complete a full lap in the track provided in the Udacity simulator using MPC, while handling a 100 millisecond latency to mimic a realistic application. Cost weight parameters were tuned to maximize speed, while maintaining safety and driveability at lower speeds.
+
+## Rubric Points
+
+- **The Model**: *Student describes their model in detail. This includes the state, actuators and update equations.*
+
+The controller used a simple Kinematic model to model the vehicle. Kinematic models are simplifications of dynamic models that ignore tire forces, gravity, and mass. This simplification reduces the accuracy of the models, but it also makes them more tractable. At low and moderate speeds, kinematic models often approximate the actual vehicle dynamics.
+
+The state vector was represented by 4 variables; Position **(_x,y_)**, heading **(_ψ_)** and velocity **(_v_)**. The simulator provides control over the vehicle's throttle, brake, and stearing. For simplicity, brake and throttle were merged into a single actuation parameter **(_a_)**, in addition to the steering actuation parameter **(_δ_)**.
+
+- **Timestep Length and Elapsed Duration (N & dt)**: *Student discusses the reasoning behind the chosen N (timestep length) and dt (elapsed duration between timesteps) values. Additionally the student details the previous values tried.*
+
+The variable **N** represents the number of descrete steps in the future at which that the controller will predict the state of the vehicle, and the optimal actuations parameters. The variable **dt** represents the time duration for each of these steps. The chosen values for **N** and **dt** of 10 and 0.1 causes the controller to predict 10 steps, each of a 0.1 sec (100 ms) duration. Accordingly, the controller predicts the trajectory of the vehicle during the preceeding 1 second in the future. The final values were decided based on different trials, where various combinations of N and dt produced erratic behaviour either due to the heavy processing needed, or not being able to predict far into the future. A 1 second prediction was found sufficient for the given track, and 10 steps give the balance between a discrete prediction, and reasonable processing time. Other values tried include 20/0.25, 10/0.05, 20/0.1, and others.
+
+
+- **Polynomial Fitting and MPC Preprocessing**: *A polynomial is fitted to waypoints. If the student preprocesses waypoints, the vehicle state, and/or actuators prior to the MPC procedure it is described.*
+
+After receiving the way points from the simulator, they are transformed to be in the vehicle coordinate frame using the vehicles position and heading provided by the simulator. The points are then fitted to a 3rd order polynomial. The vehicle state is also transformed to the vehicle coordinate frame as well.
+
+
+- **Model Predictive Control with Latency**: *The student implements Model Predictive Control that handles a 100 millisecond latency. Student provides details on how they deal with latency.*
+
+Latency was introduced into the system to simulate delay that could occur as a result of various factors including communication delyas, actuator delays, or ignored vehicle dynamics. In order to design a controller that is robust enough to handle 100 ms latency, the actual state of the vehicle was predicted 100 ms into the future and fed into the controller, which will in turn provide actuation commands that maps to the vehicles future state which will actually be close enough to the present state when the actuation commands are actually executed.
+
+A cost was added to account for every parameter to be optimized, along for a specific weight to be multiplied by each cost. Cost are CTE, EPSI, V, DELTA, A, DELTA_V, D_DELTA, D_A. In addition to the cost parameters mentioned in the lectures, another parameter was added to account for high velocity curves to avoid high lateral forces. Cost weights were tuned based on trial and error.
 
 ## Dependencies
 
